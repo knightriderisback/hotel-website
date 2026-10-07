@@ -1,3 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --navy: #101f31;
+  --navy-deep: #0b1624;
+  --gold: #af915f;
+  --gold-light: #d8bc85;
+  --cream: #f6f1e7;
+  --ink: #1d2733;
+}
+html { scroll-behavior: smooth; }
+body { margin: 0; font-family: Jost, system-ui, sans-serif; background: var(--cream); color: var(--ink); }
+.font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+.bg-navy { background: var(--navy); }
+.bg-navy-deep { background: var(--navy-deep); }
+.text-cream { color: var(--cream); }
+.text-gold { color: var(--gold); }
