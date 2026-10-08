@@ -1,6 +1,7 @@
-import { type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { useCms } from '@/cms/store'
 import { Field, ImageField } from './fields'
+import { SocialPanel } from './panelsSocial'
 
 export function ThemePanel() {
   const cms = useCms()
@@ -80,16 +81,7 @@ export function RestPanels({ tab, curPass, setCurPass, newPass, setNewPass, newE
     </section>
   )
 
-  if (tab === 'social') return (
-    <section className="space-y-3">
-      <h2 className="text-2xl font-semibold">Social</h2>
-      <div className="grid gap-3 md:grid-cols-2">
-        {([['instagram','Instagram'],['facebook','Facebook'],['twitter','Twitter / X'],['youtube','YouTube'],['whatsapp','WhatsApp'],['linkedin','LinkedIn']] as const).map(([k,l]) => (
-          <Field key={k} label={l} value={data.social[k]} onChange={(v) => cms.updateSocial({ [k]: v })} />
-        ))}
-      </div>
-    </section>
-  )
+  if (tab === 'social') return <SocialPanel flash={flash} />
 
   if (tab === 'sections') return (
     <section className="space-y-3">
