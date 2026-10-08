@@ -39,6 +39,10 @@ export type FeedAccount = {
   platform: EmbedPlatform
   handle: string
   label: string
+  /** Instagram Graph API long-lived token (Business/Creator account) */
+  accessToken?: string
+  /** Instagram Business Account ID (optional if token is user token) */
+  igUserId?: string
 }
 
 export type EmbedsConfig = {
