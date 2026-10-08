@@ -8,19 +8,23 @@ import Banquet from '@/sections/Banquet'
 import Gallery from '@/sections/Gallery'
 import Contact from '@/sections/Contact'
 import Footer from '@/sections/Footer'
+import { useCms } from '@/cms/store'
 
 export default function Home() {
+  const { data } = useCms()
+  const s = data.sections
+
   return (
     <main className="bg-cream">
       <Nav />
-      <Hero />
-      <About />
-      <Rooms />
-      <Dining />
-      <Amenities />
-      <Banquet />
-      <Gallery />
-      <Contact />
+      {s.hero && <Hero />}
+      {s.about && <About />}
+      {s.rooms && <Rooms />}
+      {s.dining && <Dining />}
+      {s.amenities && <Amenities />}
+      {s.banquet && <Banquet />}
+      {s.gallery && <Gallery />}
+      {s.contact && <Contact />}
       <Footer />
     </main>
   )
