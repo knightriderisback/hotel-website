@@ -52,27 +52,9 @@ export const DEFAULT_CMS: CmsData = {
       'Send us your details — the request opens directly in WhatsApp to our reception, and we confirm within minutes.',
   },
   rooms: [
-    {
-      name: 'Deluxe Room',
-      image: 'https://steelcity.kimi.page/images/room-deluxe.jpg',
-      blurb:
-        'A calm, considered space with a plush king bed, crisp linens and warm bedside light — everything a restful night needs after a long journey.',
-      features: ['King Bed', 'Air Conditioning', 'High-Speed Wi-Fi', 'LED TV', 'Ultra-Modern Washroom'],
-    },
-    {
-      name: 'Executive Suite',
-      image: 'https://steelcity.kimi.page/images/room-executive.jpg',
-      blurb:
-        'Our most generous address — a spacious suite with a private seating corner, work desk and evening views over the town. Made for longer, slower stays.',
-      features: ['Separate Lounge', 'Work Desk', 'Air Conditioning', 'Room Service', 'Premium Amenities'],
-    },
-    {
-      name: 'Family Room',
-      image: 'https://steelcity.kimi.page/images/room-family.jpg',
-      blurb:
-        'Two comfortable queen beds and room to breathe, so the whole family stays together — with space left over for the luggage and the laughter.',
-      features: ['Two Queen Beds', 'Sleeps Four', 'Air Conditioning', 'High-Speed Wi-Fi', 'Family Friendly'],
-    },
+    { name: 'Deluxe Room', image: 'https://steelcity.kimi.page/images/room-deluxe.jpg', blurb: 'A calm, considered space with a plush king bed, crisp linens and warm bedside light.', features: ['King Bed', 'Air Conditioning', 'High-Speed Wi-Fi', 'LED TV', 'Ultra-Modern Washroom'] },
+    { name: 'Executive Suite', image: 'https://steelcity.kimi.page/images/room-executive.jpg', blurb: 'A spacious suite with a private seating corner, work desk and evening views over the town.', features: ['Separate Lounge', 'Work Desk', 'Air Conditioning', 'Room Service', 'Premium Amenities'] },
+    { name: 'Family Room', image: 'https://steelcity.kimi.page/images/room-family.jpg', blurb: 'Two comfortable queen beds so the whole family stays together.', features: ['Two Queen Beds', 'Sleeps Four', 'Air Conditioning', 'High-Speed Wi-Fi', 'Family Friendly'] },
   ],
   amenities: [
     { title: '24×7 Room Service', note: 'Round-the-clock assistance, a call away' },
@@ -83,19 +65,12 @@ export const DEFAULT_CMS: CmsData = {
     { title: 'Prime Location', note: 'New Market Main Road, near Gupta Chowk' },
   ],
   images: {
-    heroSlides: [
-      'https://steelcity.kimi.page/images/hero-exterior.jpg',
-      'https://steelcity.kimi.page/images/hero-lobby.jpg',
-    ],
+    heroSlides: ['https://steelcity.kimi.page/images/hero-exterior.jpg', 'https://steelcity.kimi.page/images/hero-lobby.jpg'],
     aboutLobby: 'https://steelcity.kimi.page/images/hero-lobby.jpg',
     aboutCuisine: 'https://steelcity.kimi.page/images/cuisine.jpg',
     restaurant: 'https://steelcity.kimi.page/images/restaurant.jpg',
     banquet: 'https://steelcity.kimi.page/images/banquet.jpg',
-    rooms: [
-      'https://steelcity.kimi.page/images/room-deluxe.jpg',
-      'https://steelcity.kimi.page/images/room-executive.jpg',
-      'https://steelcity.kimi.page/images/room-family.jpg',
-    ],
+    rooms: ['https://steelcity.kimi.page/images/room-deluxe.jpg', 'https://steelcity.kimi.page/images/room-executive.jpg', 'https://steelcity.kimi.page/images/room-family.jpg'],
     gallery: [
       { src: 'https://steelcity.kimi.page/images/hero-exterior.jpg', caption: 'The hotel at dusk' },
       { src: 'https://steelcity.kimi.page/images/room-executive.jpg', caption: 'Executive Suite' },
@@ -119,8 +94,9 @@ export const DEFAULT_CMS: CmsData = {
     enabled: true,
     eyebrow: 'Social Feed',
     title: 'Follow Our Journey',
-    intro: 'Latest moments from Instagram, Facebook, YouTube and more — updated live.',
+    intro: 'Connected accounts stay live — new posts appear here automatically.',
     items: [],
+    accounts: [],
   },
   theme: {
     navy: '#101f31',
@@ -135,11 +111,7 @@ export const DEFAULT_CMS: CmsData = {
     fontDisplay: "'Cormorant Garamond', Georgia, serif",
     fontBody: "'Jost', system-ui, sans-serif",
   },
-  buttons: {
-    style: 'steel',
-    animation: 'shine',
-    radius: 'sharp',
-  },
+  buttons: { style: 'steel', animation: 'shine', radius: 'sharp' },
   sections: {
     hero: true,
     about: true,
@@ -153,10 +125,8 @@ export const DEFAULT_CMS: CmsData = {
   },
 }
 
-/** Default admin credentials (not shown on login UI) */
 export const DEFAULT_AUTH: AuthState = {
   email: 'knight.rider.is.back@gmail.com',
-  // SHA-256 of "9876543210" — computed offline; login also accepts plain match via hashPassword
   passwordHash: '',
 }
 
