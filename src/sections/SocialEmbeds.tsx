@@ -1,8 +1,8 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import { useCms } from '@/cms/store'
 import type { EmbedItem, FeedAccount } from '@/cms/types'
-import { parseAccount, parsePostUrl } from '@/lib/feedAccount'
+import { parseAccount, parsePostUrl, youtubeRss } from '@/lib/feedAccount'
 
 function useInstagramEmbed(deps: unknown) {
   useEffect(() => {
@@ -44,12 +44,7 @@ function IgLivePost({ item }: { item: EmbedItem }) {
   useInstagramEmbed(href)
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="w-[328px] shrink-0 overflow-hidden rounded-xl bg-white shadow-lg shadow-black/10">
-      <blockquote
-        className="instagram-media"
-        data-instgrm-permalink={href}
-        data-instgrm-version="14"
-        style={{ background: '#FFF', border: 0, margin: 0, maxWidth: '540px', minWidth: '280px', padding: 0, width: '100%' }}
-      >
+      <blockquote className="instagram-media" data-instgrm-permalink={href} data-instgrm-version="14" style={{ background: '#FFF', border: 0, margin: 0, maxWidth: '540px', minWidth: '280px', padding: 0, width: '100%' }}>
         <a href={href} target="_blank" rel="noreferrer">{item.title || 'View on Instagram'}</a>
       </blockquote>
     </motion.div>
@@ -59,20 +54,12 @@ function IgLivePost({ item }: { item: EmbedItem }) {
 function IgLiveProfile({ account }: { account: FeedAccount }) {
   const parsed = parseAccount('instagram', account.handle)
   if (!parsed) return null
-  const href = parsed.href
-  useInstagramEmbed(href)
+  useInstagramEmbed(parsed.href)
   return (
     <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="w-[328px] shrink-0 overflow-hidden rounded-xl bg-white shadow-lg">
-      <div className="border-b border-zinc-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-        @{parsed.handle} · Instagram
-      </div>
-      <blockquote
-        className="instagram-media"
-        data-instgrm-permalink={href}
-        data-instgrm-version="14"
-        style={{ background: '#FFF', border: 0, margin: 0, maxWidth: '540px', minWidth: '280px', padding: 0, width: '100%' }}
-      >
-        <a href={href} target="_blank" rel="noreferrer">@{parsed.handle}</a>
+      <div className="border-b border-zinc-100 px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">@{parsed.handle} · Instagram</div>
+      <blockquote className="instagram-media" data-instgrm-permalink={parsed.href} data-instgrm-version="14" style={{ background: '#FFF', border: 0, margin: 0, maxWidth: '540px', minWidth: '280px', padding: 0, width: '100%' }}>
+        <a href={parsed.href} target="_blank" rel="noreferrer">@{parsed.handle}</a>
       </blockquote>
     </motion.div>
   )
@@ -81,9 +68,7 @@ function IgLiveProfile({ account }: { account: FeedAccount }) {
 function YtLiveVideo({ item }: { item: EmbedItem }) {
   const parsed = parsePostUrl('youtube', item.url)
   if (!parsed?.embedUrl) {
-    return (
-      <a href={item.url} className="text-sm text-gold underline" target="_blank" rel="noreferrer">{item.title || item.url}</a>
-    )
+    return <a href={item.url} className="text-sm text-gold underline" target="_blank" rel="noreferrer">{item.title || item.url}</a>
   }
   const isShort = !!parsed.isShort || /shorts/i.test(item.url)
   return (
@@ -91,24 +76,45 @@ function YtLiveVideo({ item }: { item: EmbedItem }) {
       <div className={isShort ? 'relative overflow-hidden rounded-[1.6rem] border-[5px] border-zinc-900 bg-black shadow-2xl' : 'overflow-hidden rounded-xl border border-ink/10 bg-black shadow-lg'}>
         {isShort && (
           <div className="absolute left-0 right-0 top-0 z-10 flex justify-between px-3 pt-2 text-[9px] text-white/90">
-            <span>Shorts</span>
-            <span>Live</span>
+            <span>Shorts</span><span>Live</span>
           </div>
         )}
         <div className={isShort ? 'relative aspect-[9/16]' : 'relative aspect-video'}>
-          <iframe
-            title={item.title || 'YouTube'}
-            src={parsed.embedUrl}
-            className="absolute inset-0 h-full w-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-            loading="lazy"
-          />
+          <iframe title={item.title || 'YouTube'} src={parsed.embedUrl} className="absolute inset-0 h-full w-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen loading="lazy" />
         </div>
       </div>
       {item.title && <p className="mt-2 line-clamp-2 text-center text-sm font-light text-ink">{item.title}</p>}
     </motion.div>
   )
+}
+
+function useYtChannelVideos(account: FeedAccount): EmbedItem[] {
+  const [list, setList] = useState<EmbedItem[]>([])
+  const rss = youtubeRss(account)
+  useEffect(() => {
+    if (!rss) { setList([]); return }
+    let cancel = false
+    fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rss)}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancel) return
+        const items: EmbedItem[] = (data?.items || []).slice(0, 12).map((item: { title?: string; link?: string }, i: number) => {
+          const link = item.link || ''
+          const id = (link.split('v=')[1] || '').split('&')[0] || (link.includes('/shorts/') ? link.split('/shorts/')[1]?.split(/[?&#]/)[0] : '') || `yt-${i}`
+          const isShort = /\/shorts\//i.test(link)
+          return {
+            id: `rss-${id}`,
+            platform: 'youtube' as const,
+            url: isShort ? `https://www.youtube.com/shorts/${id}` : `https://www.youtube.com/watch?v=${id}`,
+            title: item.title || 'YouTube video',
+          }
+        })
+        setList(items.filter((x) => x.url.includes('watch?v=') || x.url.includes('/shorts/')))
+      })
+      .catch(() => { if (!cancel) setList([]) })
+    return () => { cancel = true }
+  }, [rss])
+  return list
 }
 
 function YtLiveChannel({ account }: { account: FeedAccount }) {
@@ -137,6 +143,43 @@ function YtLiveChannel({ account }: { account: FeedAccount }) {
         )}
       </div>
     </motion.div>
+  )
+}
+
+function YtChannelVideoRail({ account }: { account: FeedAccount }) {
+  const videos = useYtChannelVideos(account)
+  if (!videos.length) return null
+  return (
+    <div className="mt-6">
+      <p className="mb-3 text-center text-[0.6rem] uppercase tracking-[0.28em] text-ink/40">
+        Latest from {account.label || account.handle} · single videos
+      </p>
+      <Rail>
+        {videos.map((item) => (
+          <YtLiveVideo key={item.id} item={item} />
+        ))}
+      </Rail>
+    </div>
+  )
+}
+
+function YtAllVideos({ profiles, manual }: { profiles: FeedAccount[]; manual: EmbedItem[] }) {
+  return (
+    <>
+      {profiles.map((p) => (
+        <YtChannelVideoRail key={p.id} account={p} />
+      ))}
+      {manual.length > 0 && (
+        <div className="mt-8">
+          <p className="mb-3 text-center text-[0.6rem] uppercase tracking-[0.28em] text-ink/40">Added videos & Shorts</p>
+          <Rail>
+            {manual.map((item) => (
+              <YtLiveVideo key={item.id} item={item} />
+            ))}
+          </Rail>
+        </div>
+      )}
+    </>
   )
 }
 
@@ -206,16 +249,7 @@ export default function SocialEmbeds() {
                 </Rail>
               </div>
             )}
-            {ytPosts.length > 0 && (
-              <div>
-                <p className="mb-3 text-center text-[0.6rem] uppercase tracking-[0.28em] text-ink/40">Videos & Shorts</p>
-                <Rail>
-                  {ytPosts.map((item) => (
-                    <YtLiveVideo key={item.id} item={item} />
-                  ))}
-                </Rail>
-              </div>
-            )}
+            <YtAllVideos profiles={ytProfiles} manual={ytPosts} />
           </div>
         )}
 
