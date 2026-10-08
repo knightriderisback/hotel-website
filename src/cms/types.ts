@@ -34,12 +34,20 @@ export type EmbedItem = {
   title: string
 }
 
+export type FeedAccount = {
+  id: string
+  platform: EmbedPlatform
+  handle: string
+  label: string
+}
+
 export type EmbedsConfig = {
   enabled: boolean
   eyebrow: string
   title: string
   intro: string
   items: EmbedItem[]
+  accounts: FeedAccount[]
 }
 
 export type ThemeConfig = {
