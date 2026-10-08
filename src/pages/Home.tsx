@@ -6,6 +6,7 @@ import Dining from '@/sections/Dining'
 import Amenities from '@/sections/Amenities'
 import Banquet from '@/sections/Banquet'
 import Gallery from '@/sections/Gallery'
+import SocialEmbeds from '@/sections/SocialEmbeds'
 import Contact from '@/sections/Contact'
 import Footer from '@/sections/Footer'
 import { useCms } from '@/cms/store'
@@ -24,6 +25,7 @@ export default function Home() {
       {s.amenities && <Amenities />}
       {s.banquet && <Banquet />}
       {s.gallery && <Gallery />}
+      {s.socialEmbeds && <SocialEmbeds />}
       {s.contact && <Contact />}
       <Footer />
     </main>

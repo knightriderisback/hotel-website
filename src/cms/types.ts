@@ -25,6 +25,23 @@ export type SocialLinks = {
   linkedin: string
 }
 
+export type EmbedPlatform = 'youtube' | 'instagram' | 'facebook' | 'twitter'
+
+export type EmbedItem = {
+  id: string
+  platform: EmbedPlatform
+  url: string
+  title: string
+}
+
+export type EmbedsConfig = {
+  enabled: boolean
+  eyebrow: string
+  title: string
+  intro: string
+  items: EmbedItem[]
+}
+
 export type ThemeConfig = {
   navy: string
   navyDeep: string
@@ -53,6 +70,7 @@ export type SectionVisibility = {
   amenities: boolean
   banquet: boolean
   gallery: boolean
+  socialEmbeds: boolean
   contact: boolean
 }
 
@@ -114,6 +132,7 @@ export type CmsData = {
   amenities: AmenityItem[]
   images: ImagesConfig
   social: SocialLinks
+  embeds: EmbedsConfig
   theme: ThemeConfig
   buttons: ButtonConfig
   sections: SectionVisibility
