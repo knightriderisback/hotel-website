@@ -28,7 +28,25 @@ function loadCms(): CmsData {
   try {
     const raw = localStorage.getItem(CMS_STORAGE_KEY)
     if (!raw) return structuredClone(DEFAULT_CMS)
-    return { ...structuredClone(DEFAULT_CMS), ...JSON.parse(raw) }
+    const parsed = JSON.parse(raw) as Partial<CmsData>
+    const base = structuredClone(DEFAULT_CMS)
+    return {
+      ...base,
+      ...parsed,
+      content: { ...base.content, ...(parsed.content || {}) },
+      social: { ...base.social, ...(parsed.social || {}) },
+      embeds: {
+        ...base.embeds,
+        ...(parsed.embeds || {}),
+        items: parsed.embeds?.items ?? base.embeds.items,
+      },
+      theme: { ...base.theme, ...(parsed.theme || {}) },
+      buttons: { ...base.buttons, ...(parsed.buttons || {}) },
+      sections: { ...base.sections, ...(parsed.sections || {}) },
+      images: { ...base.images, ...(parsed.images || {}) },
+      rooms: parsed.rooms ?? base.rooms,
+      amenities: parsed.amenities ?? base.amenities,
+    }
   } catch {
     return structuredClone(DEFAULT_CMS)
   }
@@ -51,6 +69,8 @@ type CmsContextValue = {
   updateTheme: (patch: Partial<CmsData['theme']>) => void
   updateButtons: (patch: Partial<CmsData['buttons']>) => void
   updateSocial: (patch: Partial<CmsData['social']>) => void
+  updateEmbeds: (patch: Partial<CmsData['embeds']>) => void
+  setEmbeds: (items: CmsData['embeds']['items']) => void
   updateSections: (patch: Partial<CmsData['sections']>) => void
   updateImages: (patch: Partial<CmsData['images']>) => void
   setRooms: (rooms: CmsData['rooms']) => void
@@ -126,6 +146,16 @@ export function CmsProvider({ children }: { children: ReactNode }) {
   const updateSocial = useCallback(
     (patch: Partial<CmsData['social']>) =>
       setDataState((p) => ({ ...p, social: { ...p.social, ...patch } })),
+    [],
+  )
+  const updateEmbeds = useCallback(
+    (patch: Partial<CmsData['embeds']>) =>
+      setDataState((p) => ({ ...p, embeds: { ...p.embeds, ...patch } })),
+    [],
+  )
+  const setEmbeds = useCallback(
+    (items: CmsData['embeds']['items']) =>
+      setDataState((p) => ({ ...p, embeds: { ...p.embeds, items } })),
     [],
   )
   const updateSections = useCallback(
@@ -214,6 +244,8 @@ export function CmsProvider({ children }: { children: ReactNode }) {
       updateTheme,
       updateButtons,
       updateSocial,
+      updateEmbeds,
+      setEmbeds,
       updateSections,
       updateImages,
       setRooms,
@@ -229,10 +261,27 @@ export function CmsProvider({ children }: { children: ReactNode }) {
       adminEmail: auth.email,
     }),
     [
-      data, setData, updateContent, updateTheme, updateButtons, updateSocial,
-      updateSections, updateImages, setRooms, setAmenities, resetToDefaults,
-      exportJson, importJson, isAuthenticated, login, logout, changePassword,
-      changeEmail, auth.email,
+      data,
+      setData,
+      updateContent,
+      updateTheme,
+      updateButtons,
+      updateSocial,
+      updateEmbeds,
+      setEmbeds,
+      updateSections,
+      updateImages,
+      setRooms,
+      setAmenities,
+      resetToDefaults,
+      exportJson,
+      importJson,
+      isAuthenticated,
+      login,
+      logout,
+      changePassword,
+      changeEmail,
+      auth.email,
     ],
   )
 
