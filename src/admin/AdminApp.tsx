@@ -1,7 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router'
 import { useCms } from '@/cms/store'
-import { ContentPanel, RoomsPanel, ImagesPanel, ThemePanel, RestPanels } from './panels'
+import { ContentPanel, RoomsPanel, ImagesPanel } from './panelsA'
+import { ThemePanel, RestPanels } from './panelsB'
 
 type Tab = 'dashboard' | 'content' | 'rooms' | 'amenities' | 'images' | 'theme' | 'buttons' | 'social' | 'sections' | 'settings'
 const TABS: { id: Tab; label: string }[] = [
