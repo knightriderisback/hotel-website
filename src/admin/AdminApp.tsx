@@ -68,7 +68,6 @@ export default function AdminApp() {
 
   return (
     <div className="flex min-h-screen bg-slate-100 text-slate-900">
-      {/* Desktop sidebar */}
       <aside className="hidden w-56 shrink-0 flex-col bg-slate-900 text-slate-100 md:flex">
         <div className="border-b border-slate-700 px-4 py-4">
           <p className="text-[0.65rem] uppercase tracking-[0.35em] text-amber-400">CMS</p>
@@ -110,7 +109,6 @@ export default function AdminApp() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        {/* Mobile top bar */}
         <header className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200 bg-slate-900 px-4 py-3 text-slate-100 md:hidden">
           <div>
             <p className="text-[0.55rem] uppercase tracking-[0.3em] text-amber-400">CMS</p>
@@ -134,7 +132,7 @@ export default function AdminApp() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto p-4 pb-24 md:p-6 md:pb-8 lg:p-8">
+        <main className="flex-1 overflow-auto p-4 pb-28 md:p-6 md:pb-8 lg:p-8">
           {msg && (
             <div className="mb-4 rounded bg-emerald-600 px-4 py-2 text-sm text-white">{msg}</div>
           )}
@@ -226,13 +224,19 @@ export default function AdminApp() {
           )}
         </main>
 
-        {/* Mobile bottom footer — icons only */}
         <nav
           className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-700 bg-slate-900 md:hidden"
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
           aria-label="CMS navigation"
         >
-          <div className="grid grid-cols-5 gap-0">
+          <div
+            className="flex h-12 items-center gap-1 overflow-x-auto px-2"
+            style={{
+              WebkitOverflowScrolling: 'touch',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+            }}
+          >
             {TABS.map((t) => {
               const Icon = t.icon
               const active = tab === t.id
@@ -243,14 +247,13 @@ export default function AdminApp() {
                   onClick={() => setTab(t.id)}
                   aria-label={t.label}
                   title={t.label}
-                  className={`flex h-14 flex-col items-center justify-center ${
-                    active ? 'text-amber-400' : 'text-slate-400'
+                  className={`flex h-10 w-11 shrink-0 items-center justify-center rounded-md transition-colors ${
+                    active
+                      ? 'bg-amber-600/25 text-amber-400'
+                      : 'text-slate-400 active:bg-slate-800'
                   }`}
                 >
-                  <Icon className="h-5 w-5" strokeWidth={active ? 2.25 : 1.75} />
-                  {active && (
-                    <span className="mt-0.5 h-1 w-1 rounded-full bg-amber-400" aria-hidden />
-                  )}
+                  <Icon className="h-[1.15rem] w-[1.15rem]" strokeWidth={active ? 2.25 : 1.75} />
                 </button>
               )
             })}
