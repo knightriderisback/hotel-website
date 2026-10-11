@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { motion } from 'framer-motion'
+import { m as motion } from 'framer-motion'
 import { useCms } from '@/cms/store'
 import type { EmbedItem, FeedAccount } from '@/cms/types'
 import { parseAccount, parsePostUrl, youtubeRss } from '@/lib/feedAccount'
@@ -80,7 +80,7 @@ function YtLiveVideo({ item }: { item: EmbedItem }) {
           </div>
         )}
         <div className={isShort ? 'relative aspect-[9/16]' : 'relative aspect-video'}>
-          <iframe title={item.title || 'YouTube'} src={parsed.embedUrl} className="absolute inset-0 h-full w-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen loading="lazy" />
+          <iframe title={item.title || 'YouTube'} src={`${parsed.embedUrl}${parsed.embedUrl.includes('?') ? '&' : '?'}autoplay=0`} className="absolute inset-0 h-full w-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen loading="lazy" />
         </div>
       </div>
       {item.title && <p className="mt-2 line-clamp-2 text-center text-sm font-light text-ink">{item.title}</p>}
