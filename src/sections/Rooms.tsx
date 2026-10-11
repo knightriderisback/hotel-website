@@ -1,9 +1,12 @@
 import Reveal from '@/components/Reveal'
 import { useCms } from '@/cms/store'
+import Media from '@/components/Media'
 
 export default function Rooms() {
   const { data } = useCms()
   const c = data.content
+  const rooms = data.rooms
+
   return (
     <section id="rooms" className="bg-navy py-28 lg:py-40">
       <div className="mx-auto max-w-7xl px-6 lg:px-10">
@@ -15,11 +18,11 @@ export default function Rooms() {
           <p className="max-w-sm text-sm font-light leading-relaxed tracking-wide text-cream/65">{c.roomsIntro}</p>
         </Reveal>
         <div className="flex flex-col gap-24">
-          {data.rooms.map((room, i) => (
+          {rooms.map((room, i) => (
             <div key={room.name + i} className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12">
               <Reveal className={`lg:col-span-7 ${i % 2 === 1 ? 'lg:order-2' : ''}`} y={40}>
                 <div className="img-zoom frame-gold aspect-[16/10]">
-                  <img src={room.image} alt={room.name} className="h-full w-full object-cover" />
+                  <Media src={room.image} alt={room.name} className="h-full w-full" />
                 </div>
               </Reveal>
               <div className={`lg:col-span-5 ${i % 2 === 1 ? 'lg:order-1 lg:pr-10' : 'lg:pl-10'}`}>
@@ -31,11 +34,17 @@ export default function Rooms() {
                   <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-3">
                     {room.features.map((f) => (
                       <li key={f} className="flex items-center gap-2 text-[0.68rem] uppercase tracking-[0.22em] text-cream/75">
-                        <span className="h-1 w-1 rounded-full bg-gold" />{f}
+                        <span className="h-1 w-1 rounded-full bg-gold" />
+                        {f}
                       </li>
                     ))}
                   </ul>
-                  <a href={`https://wa.me/${c.receptionRaw}?text=${encodeURIComponent(`Hello ${c.hotelName}, enquire about ${room.name}.`)}`} target="_blank" rel="noreferrer" className="btn-split mt-10">
+                  <a
+                    href={`https://wa.me/${c.receptionRaw}?text=${encodeURIComponent(`Hello ${c.hotelName}, I would like to enquire about the ${room.name}.`)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn-split mt-10"
+                  >
                     <span>Enquire — {room.name}</span>
                   </a>
                 </Reveal>
