@@ -4,12 +4,15 @@ import { BrowserRouter } from 'react-router'
 import './index.css'
 import App from './App.tsx'
 import { CmsProvider } from './cms/store'
+import MotionProvider from './components/MotionProvider'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <CmsProvider>
-        <App />
+        <MotionProvider>
+          <App />
+        </MotionProvider>
       </CmsProvider>
     </BrowserRouter>
   </StrictMode>,
