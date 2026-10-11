@@ -1,6 +1,6 @@
 import { type ChangeEvent, useEffect, useState } from 'react'
 import { isVideoSrc } from '@/lib/media'
-import { deleteMediaBlob, isIdbSrc, resolveMediaUrl, saveMediaBlob } from '@/lib/mediaStore'
+import { deleteMediaBlob, isIdbSrc, resolveMedia, saveMediaBlob } from '@/lib/mediaStore'
 
 export function Field({
   label,
@@ -37,7 +37,6 @@ export function Field({
   )
 }
 
-/** Image + video. Files go to IndexedDB (no size limit, no blank-screen crash). URLs stay as-is. */
 export function ImageField({
   label,
   value,
@@ -54,7 +53,7 @@ export function ImageField({
 
   useEffect(() => {
     let alive = true
-    let blobUrl: string | null = null
+    let revoke: (() => void) | undefined
 
     if (!value) {
       setPreview(null)
@@ -67,22 +66,17 @@ export function ImageField({
 
     if (isIdbSrc(value)) {
       setPreview(null)
-      resolveMediaUrl(value)
-        .then(async (url) => {
+      resolveMedia(value)
+        .then((res) => {
           if (!alive) {
-            if (url?.startsWith('blob:')) URL.revokeObjectURL(url)
+            res?.revoke?.()
             return
           }
-          blobUrl = url
-          if (url?.startsWith('blob:')) {
-            try {
-              const b = await fetch(url).then((r) => r.blob())
-              if (alive) setPreviewVideo(b.type.startsWith('video/'))
-            } catch {
-              /* ignore */
-            }
-          }
-          if (alive) setPreview(url)
+          if (!res) return
+          revoke = res.revoke
+          if (res.type.startsWith('video/')) setPreviewVideo(true)
+          else if (res.type.startsWith('image/')) setPreviewVideo(false)
+          setPreview(res.url)
         })
         .catch(() => {
           if (alive) setPreview(null)
@@ -93,7 +87,7 @@ export function ImageField({
 
     return () => {
       alive = false
-      if (blobUrl?.startsWith('blob:')) URL.revokeObjectURL(blobUrl)
+      revoke?.()
     }
   }, [value])
 
@@ -133,9 +127,9 @@ export function ImageField({
       {preview ? (
         <div className="mt-2 h-28 w-full overflow-hidden rounded bg-slate-100">
           {previewVideo ? (
-            <video src={preview} className="h-full w-full object-cover" muted playsInline controls />
+            <video src={preview} className="h-full w-full object-cover" muted playsInline controls preload="metadata" />
           ) : (
-            <img src={preview} alt="" className="h-full w-full object-cover" />
+            <img src={preview} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" />
           )}
         </div>
       ) : value ? (
@@ -164,7 +158,7 @@ export function ImageField({
         disabled={busy}
         className="mt-1 block w-full text-xs disabled:opacity-50"
       />
-      {busy && <p className="mt-1 text-[11px] text-slate-500">Uploading… screen freeze nahi hogi</p>}
+      {busy && <p className="mt-1 text-[11px] text-slate-500">Uploading…</p>}
       {err && <p className="mt-1 text-[11px] text-red-600">{err}</p>}
       {value && (
         <button type="button" className="mt-1 text-[11px] text-slate-500 underline" onClick={clear}>
