@@ -1,5 +1,6 @@
-import { type ChangeEvent, useState } from 'react'
+import { type ChangeEvent, useEffect, useState } from 'react'
 import { isVideoSrc } from '@/lib/media'
+import { deleteMediaBlob, isIdbSrc, resolveMediaUrl, saveMediaBlob } from '@/lib/mediaStore'
 
 export function Field({
   label,
@@ -36,7 +37,7 @@ export function Field({
   )
 }
 
-/** Image + video upload / URL. Any size, ratio, format — previewed with object-cover. */
+/** Image + video. Files go to IndexedDB (no size limit, no blank-screen crash). URLs stay as-is. */
 export function ImageField({
   label,
   value,
@@ -47,29 +48,99 @@ export function ImageField({
   onChange: (v: string) => void
 }) {
   const [err, setErr] = useState('')
-  const video = isVideoSrc(value)
+  const [busy, setBusy] = useState(false)
+  const [preview, setPreview] = useState<string | null>(null)
+  const [previewVideo, setPreviewVideo] = useState(false)
 
-  const onFile = (e: ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    let alive = true
+    let blobUrl: string | null = null
+
+    if (!value) {
+      setPreview(null)
+      setPreviewVideo(false)
+      return
+    }
+
+    if (isVideoSrc(value)) setPreviewVideo(true)
+    else setPreviewVideo(false)
+
+    if (isIdbSrc(value)) {
+      setPreview(null)
+      resolveMediaUrl(value)
+        .then(async (url) => {
+          if (!alive) {
+            if (url?.startsWith('blob:')) URL.revokeObjectURL(url)
+            return
+          }
+          blobUrl = url
+          if (url?.startsWith('blob:')) {
+            try {
+              const b = await fetch(url).then((r) => r.blob())
+              if (alive) setPreviewVideo(b.type.startsWith('video/'))
+            } catch {
+              /* ignore */
+            }
+          }
+          if (alive) setPreview(url)
+        })
+        .catch(() => {
+          if (alive) setPreview(null)
+        })
+    } else {
+      setPreview(value)
+    }
+
+    return () => {
+      alive = false
+      if (blobUrl?.startsWith('blob:')) URL.revokeObjectURL(blobUrl)
+    }
+  }, [value])
+
+  const onFile = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     setErr('')
-    const reader = new FileReader()
-    reader.onload = () => onChange(String(reader.result || ''))
-    reader.onerror = () => setErr('File read fail')
-    reader.readAsDataURL(file)
+    setBusy(true)
+    try {
+      const prev = value
+      const ref = await saveMediaBlob(file)
+      onChange(ref)
+      if (prev && isIdbSrc(prev)) {
+        deleteMediaBlob(prev).catch(() => {})
+      }
+    } catch (ex) {
+      console.error(ex)
+      setErr('Upload fail — browser storage blocked or full. URL paste try karo.')
+    } finally {
+      setBusy(false)
+      e.target.value = ''
+    }
+  }
+
+  const clear = () => {
+    setErr('')
+    if (value && isIdbSrc(value)) deleteMediaBlob(value).catch(() => {})
+    onChange('')
   }
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-3">
       <p className="text-xs font-medium uppercase tracking-wider text-slate-500">{label}</p>
-      <p className="mt-0.5 text-[10px] text-slate-400">Image ya video · koi bhi size / ratio / format · auto fit</p>
-      {value ? (
+      <p className="mt-0.5 text-[10px] text-slate-400">
+        Image ya video · koi size limit nahi · auto fit · file IndexedDB mein save
+      </p>
+      {preview ? (
         <div className="mt-2 h-28 w-full overflow-hidden rounded bg-slate-100">
-          {video ? (
-            <video src={value} className="h-full w-full object-cover" muted playsInline controls />
+          {previewVideo ? (
+            <video src={preview} className="h-full w-full object-cover" muted playsInline controls />
           ) : (
-            <img src={value} alt="" className="h-full w-full object-cover" />
+            <img src={preview} alt="" className="h-full w-full object-cover" />
           )}
+        </div>
+      ) : value ? (
+        <div className="mt-2 flex h-28 items-center justify-center rounded bg-slate-100 text-xs text-slate-400">
+          {busy ? 'Saving…' : 'Loading preview…'}
         </div>
       ) : (
         <div className="mt-2 flex h-28 items-center justify-center rounded bg-slate-100 text-xs text-slate-400">
@@ -79,24 +150,24 @@ export function ImageField({
       <input
         type="url"
         placeholder="Image / video URL"
-        value={value.startsWith('data:') ? '' : value}
+        value={value.startsWith('data:') || isIdbSrc(value) ? '' : value}
         onChange={(e) => {
           setErr('')
           onChange(e.target.value)
         }}
         className="mt-2 w-full rounded border px-2 py-1.5 text-sm"
       />
-      <input type="file" accept="image/*,video/*" onChange={onFile} className="mt-1 block w-full text-xs" />
+      <input
+        type="file"
+        accept="image/*,video/*"
+        onChange={onFile}
+        disabled={busy}
+        className="mt-1 block w-full text-xs disabled:opacity-50"
+      />
+      {busy && <p className="mt-1 text-[11px] text-slate-500">Uploading… screen freeze nahi hogi</p>}
       {err && <p className="mt-1 text-[11px] text-red-600">{err}</p>}
       {value && (
-        <button
-          type="button"
-          className="mt-1 text-[11px] text-slate-500 underline"
-          onClick={() => {
-            setErr('')
-            onChange('')
-          }}
-        >
+        <button type="button" className="mt-1 text-[11px] text-slate-500 underline" onClick={clear}>
           Clear
         </button>
       )}

@@ -39,6 +39,7 @@ function loadCms(): CmsData {
         ...base.embeds,
         ...(parsed.embeds || {}),
         items: parsed.embeds?.items ?? base.embeds.items,
+        accounts: parsed.embeds?.accounts ?? base.embeds.accounts,
       },
       theme: { ...base.theme, ...(parsed.theme || {}) },
       buttons: { ...base.buttons, ...(parsed.buttons || {}) },
@@ -96,11 +97,20 @@ export function CmsProvider({ children }: { children: ReactNode }) {
   )
 
   useEffect(() => {
-    localStorage.setItem(CMS_STORAGE_KEY, JSON.stringify(data))
+    try {
+      localStorage.setItem(CMS_STORAGE_KEY, JSON.stringify(data))
+    } catch (err) {
+      // QuotaExceeded / private mode — never crash the UI
+      console.warn('CMS localStorage save failed', err)
+    }
   }, [data])
 
   useEffect(() => {
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth))
+    try {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth))
+    } catch (err) {
+      console.warn('Auth localStorage save failed', err)
+    }
   }, [auth])
 
   useEffect(() => {
