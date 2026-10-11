@@ -1,10 +1,12 @@
 import Reveal from '@/components/Reveal'
 import { useCms } from '@/cms/store'
+import Media from '@/components/Media'
 
 export default function About() {
   const { data } = useCms()
   const c = data.content
   const img = data.images
+
   return (
     <section className="relative overflow-hidden bg-cream py-28 lg:py-40">
       <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-16 px-6 lg:grid-cols-12 lg:gap-10 lg:px-10">
@@ -34,10 +36,10 @@ export default function About() {
         <div className="lg:col-span-7">
           <Reveal delay={0.2} className="relative">
             <div className="frame-gold img-zoom relative z-10 ml-auto aspect-[4/5] max-w-md lg:mr-16">
-              <img src={img.aboutLobby} alt="Lobby" className="h-full w-full object-cover" />
+              <Media src={img.aboutLobby} alt="Lobby" className="h-full w-full" />
             </div>
             <div className="img-zoom absolute -bottom-12 left-0 z-20 hidden aspect-[4/3] w-72 shadow-2xl sm:block lg:-left-4 lg:w-96">
-              <img src={img.aboutCuisine} alt="Cuisine" className="h-full w-full object-cover" />
+              <Media src={img.aboutCuisine} alt="Cuisine" className="h-full w-full" />
             </div>
           </Reveal>
         </div>
