@@ -273,3 +273,9 @@ body {
 }
 
 ::selection { background: var(--gold); color: var(--navy-deep); }
+
+/* Paint containment — faster scroll, same look */
+main > section:not(#top) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 720px;
+}
