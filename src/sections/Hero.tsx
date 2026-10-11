@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import { m as motion } from 'framer-motion'
 import { useCms } from '@/cms/store'
 import Media from '@/components/Media'
 
@@ -17,11 +17,27 @@ export default function Hero() {
 
   return (
     <section id="top" className="relative h-[100svh] min-h-[620px] w-full overflow-hidden bg-navy-deep">
-      {slides.map((src, i) => (
-        <div key={src.slice(0, 48) + i} className={`hero-slide ${i === active ? 'active' : ''}`}>
-          <Media src={src} alt={c.hotelName} className="h-full w-full" fit="cover" autoPlay muted loop />
-        </div>
-      ))}
+      {slides.map((src, i) => {
+        const isActive = i === active
+        const prev = (active - 1 + slides.length) % slides.length
+        const mount = isActive || i === prev
+        return (
+          <div key={String(i) + (src?.slice?.(0, 24) || '')} className={`hero-slide ${isActive ? 'active' : ''}`}>
+            {mount && (
+              <Media
+                src={src}
+                alt={c.hotelName}
+                className="h-full w-full"
+                fit="cover"
+                autoPlay={isActive}
+                muted
+                loop
+                active={isActive}
+              />
+            )}
+          </div>
+        )
+      })}
       <div className="absolute inset-0 bg-gradient-to-b from-navy-deep/70 via-navy-deep/25 to-navy-deep/85" />
       <div className="v-label absolute right-6 top-1/2 hidden -translate-y-1/2 text-cream/50 lg:block">
         Est. {c.town} — Chhattisgarh

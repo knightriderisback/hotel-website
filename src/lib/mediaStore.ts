@@ -11,9 +11,7 @@ function openDb(): Promise<IDBDatabase> {
     const req = indexedDB.open(DB_NAME, DB_VER)
     req.onupgradeneeded = () => {
       const db = req.result
-      if (!db.objectStoreNames.contains(STORE)) {
-        db.createObjectStore(STORE)
-      }
+      if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE)
     }
     req.onsuccess = () => resolve(req.result)
     req.onerror = () => reject(req.error || new Error('idb open failed'))
@@ -73,7 +71,6 @@ export async function deleteMediaBlob(src: string): Promise<void> {
   db.close()
 }
 
-/** Resolve any src (url / data: / idb:) to a browser-usable URL. */
 export async function resolveMediaUrl(src: string): Promise<string | null> {
   if (!src) return null
   if (isIdbSrc(src)) {
@@ -82,4 +79,22 @@ export async function resolveMediaUrl(src: string): Promise<string | null> {
     return URL.createObjectURL(blob)
   }
   return src
+}
+
+/** Single read: blob URL + mime (avoids extra fetch for type detection). */
+export async function resolveMedia(
+  src: string,
+): Promise<{ url: string; type: string; revoke?: () => void } | null> {
+  if (!src) return null
+  if (isIdbSrc(src)) {
+    const blob = await getMediaBlob(src)
+    if (!blob) return null
+    const url = URL.createObjectURL(blob)
+    return {
+      url,
+      type: blob.type || '',
+      revoke: () => URL.revokeObjectURL(url),
+    }
+  }
+  return { url: src, type: '' }
 }

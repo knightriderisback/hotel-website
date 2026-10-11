@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 import { isVideoSrc } from '@/lib/media'
-import { isIdbSrc, resolveMediaUrl } from '@/lib/mediaStore'
+import { isIdbSrc, resolveMedia } from '@/lib/mediaStore'
 
 type Props = {
   src?: string | null
@@ -12,9 +12,10 @@ type Props = {
   loop?: boolean
   controls?: boolean
   playsInline?: boolean
+  active?: boolean
 }
 
-export default function Media({
+function MediaInner({
   src,
   alt = '',
   className = '',
@@ -24,23 +25,22 @@ export default function Media({
   loop = true,
   controls = false,
   playsInline = true,
+  active = true,
 }: Props) {
   const [resolved, setResolved] = useState<string | null>(null)
-  const [kind, setKind] = useState<'image' | 'video' | 'unknown'>('unknown')
+  const [kind, setKind] = useState<'image' | 'video'>('image')
 
   useEffect(() => {
-    let alive = true
-    let blobUrl: string | null = null
-
-    if (!src) {
+    if (!src || !active) {
       setResolved(null)
-      setKind('unknown')
       return
     }
 
+    let revoke: (() => void) | undefined
+    let alive = true
+
     if (isVideoSrc(src)) setKind('video')
-    else if (src.startsWith('data:image/') || (!isIdbSrc(src) && !isVideoSrc(src))) setKind('image')
-    else setKind('unknown')
+    else if (!isIdbSrc(src)) setKind('image')
 
     if (!isIdbSrc(src)) {
       setResolved(src)
@@ -48,24 +48,17 @@ export default function Media({
     }
 
     setResolved(null)
-    resolveMediaUrl(src)
-      .then(async (url) => {
+    resolveMedia(src)
+      .then((res) => {
         if (!alive) {
-          if (url?.startsWith('blob:')) URL.revokeObjectURL(url)
+          res?.revoke?.()
           return
         }
-        blobUrl = url
-        if (url?.startsWith('blob:')) {
-          try {
-            const blob = await fetch(url).then((r) => r.blob())
-            if (!alive) return
-            if (blob.type.startsWith('video/')) setKind('video')
-            else if (blob.type.startsWith('image/')) setKind('image')
-          } catch {
-            /* keep unknown */
-          }
-        }
-        setResolved(url)
+        if (!res) return
+        revoke = res.revoke
+        if (res.type.startsWith('video/')) setKind('video')
+        else if (res.type.startsWith('image/')) setKind('image')
+        setResolved(res.url)
       })
       .catch(() => {
         if (alive) setResolved(null)
@@ -73,11 +66,11 @@ export default function Media({
 
     return () => {
       alive = false
-      if (blobUrl?.startsWith('blob:')) URL.revokeObjectURL(blobUrl)
+      revoke?.()
     }
-  }, [src])
+  }, [src, active])
 
-  if (!src) return null
+  if (!src || !active) return null
 
   const fitClass = fit === 'contain' ? 'object-contain' : 'object-cover'
   const cls = `${fitClass} ${className}`.trim()
@@ -86,9 +79,7 @@ export default function Media({
     return <div className={`bg-black/5 ${className}`.trim()} aria-hidden />
   }
 
-  const useVideo = kind === 'video' || (kind === 'unknown' && isVideoSrc(resolved))
-
-  if (useVideo) {
+  if (kind === 'video' || isVideoSrc(src) || isVideoSrc(resolved)) {
     return (
       <video
         src={resolved}
@@ -98,9 +89,12 @@ export default function Media({
         loop={loop}
         controls={controls}
         playsInline={playsInline}
+        preload="metadata"
       />
     )
   }
 
-  return <img src={resolved} alt={alt} className={cls} loading="lazy" />
+  return <img src={resolved} alt={alt} className={cls} loading="lazy" decoding="async" />
 }
+
+export default memo(MediaInner)
