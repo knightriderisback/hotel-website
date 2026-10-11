@@ -36,7 +36,7 @@ export function Field({
   )
 }
 
-/** Image + video upload / URL. Any ratio is previewed with object-cover. */
+/** Image + video upload / URL. Any size, ratio, format — previewed with object-cover. */
 export function ImageField({
   label,
   value,
@@ -53,17 +53,6 @@ export function ImageField({
     const file = e.target.files?.[0]
     if (!file) return
     setErr('')
-    const isVid = file.type.startsWith('video/')
-    const max = isVid ? 8_000_000 : 3_500_000
-    if (file.size > max) {
-      setErr(
-        isVid
-          ? 'Video max ~8MB (local save). Badi video ke liye URL paste karo.'
-          : 'Image max ~3.5MB. Badi file ke liye URL paste karo.',
-      )
-      e.target.value = ''
-      return
-    }
     const reader = new FileReader()
     reader.onload = () => onChange(String(reader.result || ''))
     reader.onerror = () => setErr('File read fail')
@@ -73,7 +62,7 @@ export function ImageField({
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-3">
       <p className="text-xs font-medium uppercase tracking-wider text-slate-500">{label}</p>
-      <p className="mt-0.5 text-[10px] text-slate-400">Image ya video · koi bhi ratio/format · auto fit</p>
+      <p className="mt-0.5 text-[10px] text-slate-400">Image ya video · koi bhi size / ratio / format · auto fit</p>
       {value ? (
         <div className="mt-2 h-28 w-full overflow-hidden rounded bg-slate-100">
           {video ? (
