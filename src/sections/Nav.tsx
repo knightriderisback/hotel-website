@@ -6,6 +6,7 @@ export default function Nav() {
   const c = data.content
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
+
   const links = [
     data.sections.rooms && { label: 'Rooms', href: '#rooms' },
     data.sections.dining && { label: 'Dining', href: '#dining' },
@@ -32,7 +33,7 @@ export default function Nav() {
     <header className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${headerClass}`}>
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-10">
         <a href="#top" className="group flex flex-col leading-none">
-          <span className="font-display text-2xl font-medium tracking-wide text-cream">Steel City</span>
+          <span className="font-display text-2xl font-medium tracking-wide text-cream">{c.hotelName}</span>
           <span className="mt-1 text-[0.58rem] uppercase tracking-[0.5em] text-gold-light">{c.town}</span>
         </a>
         <nav className="hidden items-center gap-9 lg:flex">
